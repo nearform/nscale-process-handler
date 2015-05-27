@@ -8,7 +8,7 @@
     "process",
     "container"
   ],
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "Artistic License 2.0",
   "contributors": [
     "Peter Elger <peter.elger@nearform.com>",
@@ -20,6 +20,7 @@
   "main": "index.js",
   "dependencies": {
     "async": "^1.0.0",
+    "bunyan": "^1.3.5",
     "fs-extra": "^0.18.4",
     "is-running": "^1.0.5",
     "lodash": "^3.9.3"
