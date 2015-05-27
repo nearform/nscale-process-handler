@@ -18,9 +18,12 @@ var fs = require('fs-extra');
 var pathFromRepoUrl = require('./helpers').pathFromRepoUrl;
 var path = require('path');
 var spawn = require('child_process').spawn;
+var bunyan = require('bunyan');
+var pidHandler = require('./pid')();
 
 
 module.exports = function(logger) {
+  logger = logger || bunyan.createLogger({name: 'process-container'});
   var baseCmd = 'test -f ~/.bashrc && source ~/.bashrc; test -f ~/.bash_profile && source ~/.bash_profile; exec ';
 
   var tryOutput = function(str, out) {
@@ -49,22 +52,6 @@ module.exports = function(logger) {
     else {
       out.preview({cmd: 'missing execute block for container: ' + containerDef.id + ' deploy will fail', host: 'localhost'});
     }
-  };
-
-
-
-  var writePidFile = function(pid, system, target, container, cb) {
-    var dataDir = path.join(process.env.HOME, '/.nscale/data/');
-    var pidFile = path.join(dataDir, String(pid) + '.pid');
-    var content = {systemId: system.id,
-                   target: target,
-                   pid: pid,
-                   type: container.type,
-                   containerId: container.id,
-                   containerDefinitionId: container.containerDefinitionId,
-                   container: container};
-
-    fs.writeFile(pidFile, JSON.stringify(content, null, 2), cb);
   };
 
 
@@ -129,7 +116,7 @@ module.exports = function(logger) {
 
     run(system, container, containerDef, out, function(err, pid) {
       if (mode !== 'preview') {
-        writePidFile(pid, system, target, container, cb);
+        pidHandler.writePidFile(pid, system, target, container, cb);
       }
       else {
         cb();
@@ -149,9 +136,16 @@ module.exports = function(logger) {
 
 
 
+  var readPidDetails = function readPidDetails(cb) {
+    pidHandler.readPidDetails(cb);
+  };
+
+
+
   return {
     start: start,
     stop: stop,
+    readPidDetails: readPidDetails
   };
 };
 
