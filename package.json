@@ -1,0 +1,32 @@
+{
+  "name": "nscale-process-handler",
+  "description": "nscale process handler",
+  "keywords": [
+    "nearForm",
+    "nscale",
+    "deployer",
+    "process",
+    "container"
+  ],
+  "version": "0.1.0",
+  "license": "Artistic License 2.0",
+  "contributors": [
+    "Peter Elger <peter.elger@nearform.com>",
+    "Matteo Collina <matteo.collina@nearform.com>"
+  ],
+  "engines": {
+    "node": "*"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "async": "^1.0.0",
+    "fs-extra": "^0.18.4",
+    "is-running": "^1.0.5",
+    "lodash": "^3.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nearform/nscale-process-handler.git"
+  },
+  "devDependencies": {}
+}
