@@ -15,16 +15,19 @@
 'use strict';
 
 var fs = require('fs-extra');
+var _ = require('lodash');
 var pathFromRepoUrl = require('./helpers').pathFromRepoUrl;
 var path = require('path');
 var spawn = require('child_process').spawn;
 var bunyan = require('bunyan');
 var pidHandler = require('./pid')();
+var toTargetIp = require('nscale-target-ip');
+
 
 
 module.exports = function(logger) {
   logger = logger || bunyan.createLogger({name: 'process-container'});
-  var baseCmd = 'test -f ~/.bashrc && source ~/.bashrc; test -f ~/.bash_profile && source ~/.bash_profile; exec ';
+  var baseCmd = 'test -f ~/.bashrc && source ~/.bashrc; test -f ~/.bash_profile && source ~/.bash_profile; ';
 
   var tryOutput = function(str, out) {
     try { out.stdout(str); } catch(err) {}
@@ -41,6 +44,28 @@ module.exports = function(logger) {
       }
     }
     return '127.0.0.1';
+  };
+
+
+
+  var handleIpAddress = function(container, cmd) {
+    var ipAddress;
+
+    if (container.specific) {
+      ipAddress = container.specific.privateIpAddress || container.specific.ipAddress || container.specific.ipaddress;
+      cmd = cmd.replace(/__TARGETIP__/g, toTargetIp(ipAddress));
+    }
+    return cmd;
+  };
+
+
+
+  var generateEnvironment = function(containerEnv) {
+    var envArgs = ' ';
+    _.each(_.keys(containerEnv), function(key) {
+      envArgs += 'export ' + key + '=' + containerEnv[key] + ';';
+    });
+    return envArgs;
   };
 
 
@@ -63,6 +88,7 @@ module.exports = function(logger) {
     var env;
     var child;
     var logDir;
+    var envArgs = '';
 
 
     cmd = containerDef.specific.execute.process;
@@ -75,7 +101,13 @@ module.exports = function(logger) {
     if (!fs.existsSync(logDir)) {
       fs.mkdirsSync(logDir);
     }
-    toExec = baseCmd + cmd + ' >>' + logDir + '/' + container.id + '.log' + ' 2>>' + logDir + '/' + container.id + '.errors';
+
+    if (container.specific && container.specific.environment) {
+      envArgs = generateEnvironment(container.specific.environment);
+    }
+
+    toExec = baseCmd + envArgs + 'exec ' + cmd + ' >>' + logDir + '/' + container.id + '.log' + ' 2>>' + logDir + '/' + container.id + '.errors';
+    toExec = handleIpAddress(container, toExec);
 
     if (!cmd) { 
       return cb(new Error('missing execute.process in service definition'), {});
