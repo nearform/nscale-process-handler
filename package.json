@@ -8,7 +8,7 @@
     "process",
     "container"
   ],
-  "version": "0.1.1",
+  "version": "0.17.0",
   "license": "Artistic License 2.0",
   "contributors": [
     "Peter Elger <peter.elger@nearform.com>",
