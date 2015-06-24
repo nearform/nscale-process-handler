@@ -162,7 +162,9 @@ module.exports = function(logger) {
     if (mode === 'preview') {
       return cb();
     }
-    process.kill(container.pid, 'SIGTERM');
+    if (container.pid) {
+      process.kill(container.pid, 'SIGTERM');
+    }
     cb();
   };
 
